@@ -98,17 +98,32 @@
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var dayIndex = new Date().getDay();
+    document.addEventListener('DOMContentLoaded', async () => {
+      var videosContainer = document.getElementById('latestVideos');
+      var adContainer = document.getElementById('adContainer');
+      var adTitle = document.getElementById('adTitle');
+      var adSection = document.getElementById('adSection');
       var heroBg = document.getElementById('heroBg');
+      var heroSubtitle = document.getElementById('heroSubtitle');
+
+      // Fetch site data from JSON file (served by Netlify)
+      var siteData = null;
+      try {
+        var resp = await fetch('data/site-data.json?t=' + Date.now());
+        if (resp.ok) siteData = await resp.json();
+      } catch(e) {}
+
+      // Tagline
+      if (siteData && siteData.tagline && heroSubtitle) {
+        heroSubtitle.textContent = siteData.tagline;
+      }
+
+      // Hero background (scheduler)
       if (heroBg) {
-        var adminImages = null;
-        try {
-          var saved = localStorage.getItem('almehdaviat_scheduler');
-          if (saved) adminImages = JSON.parse(saved);
-        } catch(e) {}
-        if (adminImages && adminImages[dayIndex]) {
-          heroBg.style.backgroundImage = 'url("' + adminImages[dayIndex] + '")';
+        var dayIndex = new Date().getDay();
+        var scheduler = (siteData && siteData.scheduler) || {};
+        if (scheduler[dayIndex]) {
+          heroBg.style.backgroundImage = 'url("' + scheduler[dayIndex] + '")';
         } else {
           var svgImages = {
             0: 'assets/scheduler/sunday.svg', 1: 'assets/scheduler/monday.svg',
@@ -119,80 +134,59 @@
           heroBg.style.backgroundImage = 'url("' + svgImages[dayIndex] + '")';
         }
       }
-      var savedTagline = localStorage.getItem('almehdaviat_tagline');
-      if (savedTagline) {
-        var el = document.getElementById('heroSubtitle');
-        if (el) el.textContent = savedTagline;
-      }
-    });
-  </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      var videosContainer = document.getElementById('latestVideos');
-      var adContainer = document.getElementById('adContainer');
-      var adTitle = document.getElementById('adTitle');
-      var adSection = document.getElementById('adSection');
 
-      // Load ad placeholder from admin
-      try {
-        var adData = JSON.parse(localStorage.getItem('almehdaviat_ad') || 'null');
-        if (adData && adData.videoUrl) {
-          var videoId = adData.videoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-          if (videoId) {
-            adTitle.textContent = adData.title || 'Featured Recording';
-            adContainer.innerHTML = '<div class="ad-video">' +
-              '<iframe src="https://www.youtube.com/embed/' + videoId[1] + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' +
-              (adData.description ? '<p class="ad-description">' + adData.description + '</p>' : '') +
-              '</div>';
-          } else {
-            adSection.style.display = 'none';
-          }
+      // Ad / Featured Recording
+      var adData = (siteData && siteData.ad) || {};
+      if (adData && adData.videoUrl) {
+        var adVideoId = adData.videoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        if (adVideoId) {
+          adTitle.textContent = adData.title || 'Featured Recording';
+          adContainer.innerHTML = '<div class="ad-video">' +
+            '<iframe src="https://www.youtube.com/embed/' + adVideoId[1] + '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' +
+            (adData.description ? '<p class="ad-description">' + adData.description + '</p>' : '') +
+            '</div>';
         } else {
           adSection.style.display = 'none';
         }
-      } catch(e) {
+      } else {
         adSection.style.display = 'none';
       }
 
-      // Load 6 featured videos from admin (zero API calls)
-      try {
-        var savedVideos = JSON.parse(localStorage.getItem('almehdaviat_videos') || '[]');
-        var validVideos = savedVideos.filter(function(url) {
-          return url && url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        });
-        if (validVideos.length > 0) {
-          var html = '';
-          for (var i = 0; i < Math.min(validVideos.length, 6); i++) {
-            var url = validVideos[i];
-            var match = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            var id = match[1];
-            var title = 'Featured Video';
-            try {
-              var resp = await fetch('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=' + id + '&format=json');
-              if (resp.ok) {
-                var oembed = await resp.json();
-                title = oembed.title || title;
-              }
-            } catch(e) {}
-            html += '<a href="video.html?id=' + id + '" class="video-card">' +
-              '<div class="video-thumb">' +
-              '<img src="https://img.youtube.com/vi/' + id + '/mqdefault.jpg" alt="' + title + '" loading="lazy">' +
-              '<div class="play-overlay"><div class="play-icon">▶</div></div>' +
-              '</div>' +
-              '<div class="video-info"><h3>' + title + '</h3></div>' +
-              '</a>';
-          }
-          html += '<div style="grid-column:1/-1;text-align:center;margin-top:1.5rem">' +
-            '<a href="https://www.youtube.com/channel/UCqkCkc5-AeYPJMdAummM_xg?sub_confirmation=1" target="_blank" class="yt-channel-btn">' +
-            '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>' +
-            ' AlMehdaviat <span style="opacity:0.7;font-weight:400;margin-left:4px">— click here for more content</span>' +
-            '</a>' +
-            '</div>';
-          videosContainer.innerHTML = html;
-        } else {
-          videosContainer.innerHTML = '<div class="empty-state"><div class="icon">📺</div><p>Add videos from admin panel</p></div>';
+      // Videos
+      var videos = (siteData && siteData.videos) || [];
+      var validVideos = videos.filter(function(url) {
+        return url && url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      });
+      if (validVideos.length > 0) {
+        var html = '';
+        for (var i = 0; i < Math.min(validVideos.length, 6); i++) {
+          var url = validVideos[i];
+          var match = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+          var id = match[1];
+          var title = 'Featured Video';
+          try {
+            var vidResp = await fetch('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=' + id + '&format=json');
+            if (vidResp.ok) {
+              var oembed = await vidResp.json();
+              title = oembed.title || title;
+            }
+          } catch(e) {}
+          html += '<a href="video.html?id=' + id + '" class="video-card">' +
+            '<div class="video-thumb">' +
+            '<img src="https://img.youtube.com/vi/' + id + '/mqdefault.jpg" alt="' + title + '" loading="lazy">' +
+            '<div class="play-overlay"><div class="play-icon">▶</div></div>' +
+            '</div>' +
+            '<div class="video-info"><h3>' + title + '</h3></div>' +
+            '</a>';
         }
-      } catch(e) {
+        html += '<div style="grid-column:1/-1;text-align:center;margin-top:1.5rem">' +
+          '<a href="https://www.youtube.com/channel/UCqkCkc5-AeYPJMdAummM_xg?sub_confirmation=1" target="_blank" class="yt-channel-btn">' +
+          '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>' +
+          ' AlMehdaviat <span style="opacity:0.7;font-weight:400;margin-left:4px">— click here for more content</span>' +
+          '</a>' +
+          '</div>';
+        videosContainer.innerHTML = html;
+      } else {
         videosContainer.innerHTML = '<div class="empty-state"><div class="icon">📺</div><p>Add videos from admin panel</p></div>';
       }
     });

@@ -1,0 +1,10 @@
+{
+  "videos": ["", "", "", "", "", ""],
+  "tagline": "",
+  "ad": {
+    "title": "",
+    "videoUrl": "",
+    "description": ""
+  },
+  "scheduler": {}
+}

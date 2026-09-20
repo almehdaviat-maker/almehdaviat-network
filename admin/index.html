@@ -42,6 +42,11 @@
       border: 1px solid rgba(231, 76, 60, 0.3);
       color: #e74c3c;
     }
+    .admin-status.deploying {
+      background: rgba(212, 168, 67, 0.1);
+      border: 1px solid rgba(212, 168, 67, 0.3);
+      color: #d4a843;
+    }
     .admin-analytics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -166,6 +171,31 @@
     }
     .ad-preview-info h4 { margin: 0 0 4px; color: var(--text-primary); }
     .ad-preview-info p { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+    .deploy-btn {
+      display: block;
+      width: 100%;
+      padding: 18px 32px;
+      border-radius: 14px;
+      border: 2px solid #2ecc71;
+      background: linear-gradient(135deg, rgba(46, 204, 113, 0.15), rgba(46, 204, 113, 0.05));
+      color: #2ecc71;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 1.5rem;
+      letter-spacing: 0.5px;
+    }
+    .deploy-btn:hover {
+      background: linear-gradient(135deg, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.1));
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(46, 204, 113, 0.2);
+    }
+    .deploy-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
     @media (max-width: 768px) {
       .admin-page { padding: 1.5rem 1rem; }
       .admin-title { font-size: 1.8rem; }
@@ -198,73 +228,56 @@
     <!-- Section A: Featured Videos -->
     <div class="admin-card">
       <h2>📹 Featured Videos (Home Page)</h2>
-      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Paste YouTube video URLs to show on home page. These replace API-fetched videos.</p>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Paste YouTube video URLs to show on home page for all visitors.</p>
       <div id="videoSlots"></div>
-      <button class="admin-btn" onclick="saveVideos()">Save Videos</button>
     </div>
 
     <!-- Section B: Ad Video -->
     <div class="admin-card">
-      <h2>📢 Featured Recording (Ad)</h2>
+      <h2>📢 Featured Recording</h2>
       <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Add a YouTube video URL to show as featured recording on the home page.</p>
-      <label class="admin-label" for="adTitle">Title</label>
-      <input id="adTitle" class="admin-input" type="text" placeholder="e.g. Latest Majlis Recording">
+      <label class="admin-label" for="adTitleInput">Title</label>
+      <input id="adTitleInput" class="admin-input" type="text" placeholder="e.g. Latest Majlis Recording">
       <label class="admin-label" for="adUrl" style="margin-top:0.8rem">YouTube Video URL</label>
       <input id="adUrl" class="admin-input" type="url" placeholder="https://www.youtube.com/watch?v=...">
       <label class="admin-label" for="adDesc" style="margin-top:0.8rem">Description (optional)</label>
       <input id="adDesc" class="admin-input" type="text" placeholder="Short description...">
-      <div style="display:flex;gap:1rem;margin-top:1rem">
-        <button class="admin-btn" onclick="saveAd()">Save Ad</button>
-        <button class="admin-btn-danger" onclick="removeAd()">Remove Ad</button>
-      </div>
       <div id="adPreview" class="ad-preview" style="display:none"></div>
     </div>
 
-    <!-- Section B: Edit Content -->
+    <!-- Section C: Edit Content -->
     <div class="admin-card">
-      <h2>✏️ Edit Content</h2>
+      <h2>✏️ Tagline</h2>
       <label class="admin-label" for="taglineInput">Tagline Text</label>
       <textarea id="taglineInput" class="admin-input admin-textarea" placeholder="Enter site tagline..."></textarea>
-      <button class="admin-btn" onclick="saveTagline()">Save Tagline</button>
     </div>
 
-    <!-- Section C: Image Scheduler -->
+    <!-- DEPLOY BUTTON -->
+    <button class="deploy-btn" id="deployBtn" onclick="saveAndDeploy()">
+      🚀 Save &amp; Deploy to Website
+    </button>
+    <p style="text-align:center;color:var(--text-muted);font-size:0.8rem;margin-top:0.5rem">
+      Saves changes to GitHub and auto-deploys to your live website (1-2 minutes)
+    </p>
+
+    <!-- Section D: Image Scheduler (local only) -->
     <div class="admin-card">
-      <h2>📅 Image Scheduler</h2>
-      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Upload an image for each day of the week.</p>
+      <h2>📅 Image Scheduler <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400">(your browser only)</span></h2>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Upload an image for each day of the week. These show as hero background.</p>
       <div id="schedulerGrid" class="admin-grid"></div>
       <button class="admin-btn" onclick="saveScheduler()">Save Schedule</button>
-    </div>
-
-    <!-- Section D: Analytics -->
-    <div class="admin-card">
-      <h2>📊 Analytics</h2>
-      <div class="admin-analytics-grid">
-        <div class="admin-stat">
-          <div class="admin-stat-value" id="schedulerImages">0</div>
-          <div class="admin-stat-label">Scheduled Images</div>
-        </div>
-        <div class="admin-stat">
-          <div class="admin-stat-value" id="storageUsed">0 KB</div>
-          <div class="admin-stat-label">Storage Used</div>
-        </div>
-      </div>
     </div>
 
     <!-- Section E: Settings -->
     <div class="admin-card">
       <h2>⚙️ Settings</h2>
       <div class="admin-settings-row">
-        <span class="admin-settings-label">YouTube API Key</span>
-        <span class="admin-settings-value" id="apiKeyDisplay">Not configured</span>
+        <span class="admin-settings-label">Website Status</span>
+        <span class="admin-settings-value" id="siteStatus">Checking...</span>
       </div>
       <div class="admin-settings-row">
-        <span class="admin-settings-label">Cache Status</span>
-        <span class="admin-settings-value" id="cacheStatus">Active</span>
-      </div>
-      <div class="admin-btn-group">
-        <button class="admin-btn" onclick="clearCache()">Clear Cache</button>
-        <button class="admin-btn-danger" onclick="resetDefaults()">Reset to Defaults</button>
+        <span class="admin-settings-label">Deploy Status</span>
+        <span class="admin-settings-value" id="deployStatus">Ready</span>
       </div>
     </div>
   </div>
@@ -288,12 +301,34 @@
     const DAY_ICONS = ['☀️', '🌙', '🔥', '💧', '🌟', '📖', '🎶'];
     let schedulerData = {};
     let videoSlots = ['', '', '', '', '', ''];
+    let siteData = { videos: ['', '', '', '', '', ''], tagline: '', ad: { title: '', videoUrl: '', description: '' }, scheduler: {} };
 
     function showStatus(msg, type) {
       const el = document.getElementById('statusMsg');
       el.textContent = msg;
       el.className = 'admin-status show ' + type;
-      setTimeout(() => { el.className = 'admin-status'; }, 2500);
+      if (type !== 'deploying') setTimeout(() => { el.className = 'admin-status'; }, 3000);
+    }
+
+    // Load existing data from JSON
+    async function loadSiteData() {
+      try {
+        const resp = await fetch('../data/site-data.json?t=' + Date.now());
+        if (resp.ok) {
+          siteData = await resp.json();
+          videoSlots = (siteData.videos || []).concat(['', '', '', '', '', '']).slice(0, 6);
+          document.getElementById('taglineInput').value = siteData.tagline || '';
+          if (siteData.ad) {
+            document.getElementById('adTitleInput').value = siteData.ad.title || '';
+            document.getElementById('adUrl').value = siteData.ad.videoUrl || '';
+            document.getElementById('adDesc').value = siteData.ad.description || '';
+            showAdPreview(siteData.ad);
+          }
+          document.getElementById('siteStatus').textContent = 'Connected';
+        }
+      } catch(e) {
+        document.getElementById('siteStatus').textContent = 'Error loading';
+      }
     }
 
     // Video Slots
@@ -312,35 +347,7 @@
       });
     }
 
-    function saveVideos() {
-      localStorage.setItem('almehdaviat_videos', JSON.stringify(videoSlots));
-      showStatus('Videos saved!', 'success');
-      initVideoSlots();
-    }
-
-    function loadVideos() {
-      try {
-        const saved = localStorage.getItem('almehdaviat_videos');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          videoSlots = parsed.concat(['', '', '', '', '', '']).slice(0, 6);
-        }
-      } catch(e) {}
-    }
-
-    // Ad functions
-    function loadAd() {
-      try {
-        const ad = JSON.parse(localStorage.getItem('almehdaviat_ad') || 'null');
-        if (ad) {
-          document.getElementById('adTitle').value = ad.title || '';
-          document.getElementById('adUrl').value = ad.videoUrl || '';
-          document.getElementById('adDesc').value = ad.description || '';
-          showAdPreview(ad);
-        }
-      } catch(e) {}
-    }
-
+    // Ad preview
     function showAdPreview(ad) {
       const preview = document.getElementById('adPreview');
       if (!ad || !ad.videoUrl) { preview.style.display = 'none'; return; }
@@ -352,40 +359,7 @@
         '<p>' + (ad.description || '') + '</p></div>';
     }
 
-    function saveAd() {
-      const title = document.getElementById('adTitle').value.trim();
-      const videoUrl = document.getElementById('adUrl').value.trim();
-      const description = document.getElementById('adDesc').value.trim();
-      if (!videoUrl) { showStatus('Please enter a YouTube URL', 'error'); return; }
-      const match = videoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-      if (!match) { showStatus('Invalid YouTube URL', 'error'); return; }
-      const ad = { title, videoUrl, description };
-      localStorage.setItem('almehdaviat_ad', JSON.stringify(ad));
-      showAdPreview(ad);
-      showStatus('Ad saved successfully!', 'success');
-    }
-
-    function removeAd() {
-      localStorage.removeItem('almehdaviat_ad');
-      document.getElementById('adTitle').value = '';
-      document.getElementById('adUrl').value = '';
-      document.getElementById('adDesc').value = '';
-      document.getElementById('adPreview').style.display = 'none';
-      showStatus('Ad removed!', 'success');
-    }
-
-    // Tagline
-    function loadTagline() {
-      const saved = localStorage.getItem('almehdaviat_tagline');
-      if (saved) document.getElementById('taglineInput').value = saved;
-    }
-    function saveTagline() {
-      const val = document.getElementById('taglineInput').value.trim();
-      localStorage.setItem('almehdaviat_tagline', val);
-      showStatus('Tagline saved!', 'success');
-    }
-
-    // Scheduler
+    // Scheduler (local only)
     function initScheduler() {
       const grid = document.getElementById('schedulerGrid');
       grid.innerHTML = '';
@@ -422,54 +396,68 @@
     }
     function saveScheduler() {
       localStorage.setItem('almehdaviat_scheduler', JSON.stringify(schedulerData));
-      showStatus('Schedule saved!', 'success');
-      updateAnalytics();
+      showStatus('Schedule saved (local only)!', 'success');
     }
     function loadScheduler() {
       const saved = localStorage.getItem('almehdaviat_scheduler');
       if (saved) { try { schedulerData = JSON.parse(saved); } catch(e) { schedulerData = {}; } }
     }
 
-    // Analytics
-    function updateAnalytics() {
-      const imgCount = Object.keys(schedulerData).length;
-      document.getElementById('schedulerImages').textContent = imgCount;
-      let totalBytes = 0;
-      try {
-        for (let k in localStorage) {
-          if (localStorage.hasOwnProperty(k)) totalBytes += (localStorage[k] || '').length * 2;
-        }
-      } catch(e) {}
-      const kb = Math.round(totalBytes / 1024);
-      document.getElementById('storageUsed').textContent = kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb + ' KB';
-    }
+    // SAVE & DEPLOY
+    async function saveAndDeploy() {
+      const btn = document.getElementById('deployBtn');
+      const deployStatus = document.getElementById('deployStatus');
 
-    // Settings
-    function clearCache() {
-      const keysToKeep = ['almehdaviat_tagline', 'almehdaviat_scheduler', 'almehdaviat_ad', 'almehdaviat_videos'];
-      Object.keys(localStorage).forEach(k => { if (!keysToKeep.includes(k)) localStorage.removeItem(k); });
-      document.getElementById('cacheStatus').textContent = 'Cleared';
-      showStatus('Cache cleared!', 'success');
-    }
-    function resetDefaults() {
-      if (!confirm('This will remove ALL saved data. Are you sure?')) return;
-      localStorage.clear();
-      schedulerData = {};
-      document.getElementById('taglineInput').value = '';
-      document.getElementById('adTitle').value = '';
-      document.getElementById('adUrl').value = '';
-      document.getElementById('adDesc').value = '';
-      document.getElementById('adPreview').style.display = 'none';
-      videoSlots = ['', '', '', '', '', ''];
-      document.getElementById('cacheStatus').textContent = 'Cleared';
-      initScheduler(); updateAnalytics(); initVideoSlots();
-      showStatus('All data reset.', 'success');
+      // Collect data from form
+      const videos = videoSlots.map(v => v.trim());
+      const tagline = document.getElementById('taglineInput').value.trim();
+      const adTitle = document.getElementById('adTitleInput').value.trim();
+      const adUrl = document.getElementById('adUrl').value.trim();
+      const adDesc = document.getElementById('adDesc').value.trim();
+
+      const data = {
+        videos: videos,
+        tagline: tagline,
+        ad: { title: adTitle, videoUrl: adUrl, description: adDesc },
+        scheduler: schedulerData
+      };
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Saving & Deploying...';
+      deployStatus.textContent = 'Deploying...';
+      showStatus('Saving to GitHub and deploying...', 'deploying');
+
+      try {
+        const resp = await fetch('/.netlify/functions/save-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: data })
+        });
+
+        const result = await resp.json();
+
+        if (resp.ok && result.success) {
+          showStatus('Deployed! Website will update in 1-2 minutes.', 'success');
+          deployStatus.textContent = 'Deployed!';
+        } else {
+          showStatus('Error: ' + (result.error || 'Unknown error'), 'error');
+          deployStatus.textContent = 'Failed';
+        }
+      } catch(e) {
+        showStatus('Error: ' + e.message, 'error');
+        deployStatus.textContent = 'Failed';
+      }
+
+      btn.disabled = false;
+      btn.textContent = '🚀 Save & Deploy to Website';
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      loadTagline(); loadScheduler(); initScheduler(); updateAnalytics(); loadAd(); loadVideos(); initVideoSlots();
-      const apiKey = localStorage.getItem('almehdaviat_youtube_api_key');
-      if (apiKey) document.getElementById('apiKeyDisplay').textContent = apiKey.substring(0, 8) + '...' + apiKey.substring(apiKey.length - 4);
+      loadSiteData().then(() => {
+        initVideoSlots();
+      });
+      loadScheduler();
+      initScheduler();
     });
   </script>
 </body>
