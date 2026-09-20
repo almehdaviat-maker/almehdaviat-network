@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>Admin Dashboard - Al Mehdaviat Network</title>
+  <link rel="stylesheet" href="../css/style.css?v=2">
+  <style>
+    .admin-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      background: linear-gradient(135deg, #7a5a10 0%, #a07828 10%, #c9982a 20%, #e8c050 30%, #f0d078 40%, #ffe8a0 50%, #f0d078 60%, #e8c050 70%, #c9982a 80%, #a07828 90%, #7a5a10 100%);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: metalFlow 5s ease-in-out infinite;
+    }
+    .admin-status {
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.4s;
+      pointer-events: none;
+    }
+    .admin-status.show { opacity: 1; }
+    .admin-status.success {
+      background: rgba(46, 204, 113, 0.1);
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      color: #2ecc71;
+    }
+    .admin-status.error {
+      background: rgba(231, 76, 60, 0.1);
+      border: 1px solid rgba(231, 76, 60, 0.3);
+      color: #e74c3c;
+    }
+    .admin-analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .admin-stat {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .admin-stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .admin-stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .admin-settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      gap: 1rem;
+    }
+    .admin-settings-row:last-child { border-bottom: none; }
+    .admin-settings-label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .admin-settings-value {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-family: monospace;
+      background: var(--bg-secondary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      max-width: 320px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .admin-btn-danger {
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: 1px solid rgba(192, 57, 43, 0.3);
+      background: rgba(192, 57, 43, 0.1);
+      color: var(--red-light);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .admin-btn-danger:hover {
+      background: rgba(192, 57, 43, 0.2);
+      border-color: var(--red-light);
+      transform: translateY(-2px);
+    }
+    .admin-btn-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .admin-image-slot .day-label {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .admin-image-slot .day-sublabel {
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+    .admin-image-slot .remove-img {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(192, 57, 43, 0.85);
+      border: none;
+      color: #fff;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.75rem;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+    .admin-image-slot:hover .remove-img { display: flex; }
+    .admin-image-slot input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .ad-preview {
+      margin-top: 1rem;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .ad-preview iframe {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: none;
+    }
+    .ad-preview-info {
+      padding: 1rem;
+      background: var(--bg-secondary);
+    }
+    .ad-preview-info h4 { margin: 0 0 4px; color: var(--text-primary); }
+    .ad-preview-info p { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+    @media (max-width: 768px) {
+      .admin-page { padding: 1.5rem 1rem; }
+      .admin-title { font-size: 1.8rem; }
+      .admin-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-analytics-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-settings-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+      #videoSlots { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="nav-brand">
+      <img src="../assets/logo.png" alt="Logo" class="nav-logo-img">
+      <span class="nav-title">Al Mehdaviat Network</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../live.html">Live</a></li>
+    </ul>
+    <button class="mobile-menu-btn">☰</button>
+  </nav>
+
+  <div class="admin-page">
+    <h1 class="admin-title">Admin Dashboard</h1>
+
+    <div id="statusMsg" class="admin-status"></div>
+
+    <!-- Section A: Featured Videos -->
+    <div class="admin-card">
+      <h2>📹 Featured Videos (Home Page)</h2>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Paste YouTube video URLs to show on home page. These replace API-fetched videos.</p>
+      <div id="videoSlots"></div>
+      <button class="admin-btn" onclick="saveVideos()">Save Videos</button>
+    </div>
+
+    <!-- Section B: Ad Video -->
+    <div class="admin-card">
+      <h2>📢 Featured Recording (Ad)</h2>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Add a YouTube video URL to show as featured recording on the home page.</p>
+      <label class="admin-label" for="adTitle">Title</label>
+      <input id="adTitle" class="admin-input" type="text" placeholder="e.g. Latest Majlis Recording">
+      <label class="admin-label" for="adUrl" style="margin-top:0.8rem">YouTube Video URL</label>
+      <input id="adUrl" class="admin-input" type="url" placeholder="https://www.youtube.com/watch?v=...">
+      <label class="admin-label" for="adDesc" style="margin-top:0.8rem">Description (optional)</label>
+      <input id="adDesc" class="admin-input" type="text" placeholder="Short description...">
+      <div style="display:flex;gap:1rem;margin-top:1rem">
+        <button class="admin-btn" onclick="saveAd()">Save Ad</button>
+        <button class="admin-btn-danger" onclick="removeAd()">Remove Ad</button>
+      </div>
+      <div id="adPreview" class="ad-preview" style="display:none"></div>
+    </div>
+
+    <!-- Section B: Edit Content -->
+    <div class="admin-card">
+      <h2>✏️ Edit Content</h2>
+      <label class="admin-label" for="taglineInput">Tagline Text</label>
+      <textarea id="taglineInput" class="admin-input admin-textarea" placeholder="Enter site tagline..."></textarea>
+      <button class="admin-btn" onclick="saveTagline()">Save Tagline</button>
+    </div>
+
+    <!-- Section C: Image Scheduler -->
+    <div class="admin-card">
+      <h2>📅 Image Scheduler</h2>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Upload an image for each day of the week.</p>
+      <div id="schedulerGrid" class="admin-grid"></div>
+      <button class="admin-btn" onclick="saveScheduler()">Save Schedule</button>
+    </div>
+
+    <!-- Section D: Analytics -->
+    <div class="admin-card">
+      <h2>📊 Analytics</h2>
+      <div class="admin-analytics-grid">
+        <div class="admin-stat">
+          <div class="admin-stat-value" id="schedulerImages">0</div>
+          <div class="admin-stat-label">Scheduled Images</div>
+        </div>
+        <div class="admin-stat">
+          <div class="admin-stat-value" id="storageUsed">0 KB</div>
+          <div class="admin-stat-label">Storage Used</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section E: Settings -->
+    <div class="admin-card">
+      <h2>⚙️ Settings</h2>
+      <div class="admin-settings-row">
+        <span class="admin-settings-label">YouTube API Key</span>
+        <span class="admin-settings-value" id="apiKeyDisplay">Not configured</span>
+      </div>
+      <div class="admin-settings-row">
+        <span class="admin-settings-label">Cache Status</span>
+        <span class="admin-settings-value" id="cacheStatus">Active</span>
+      </div>
+      <div class="admin-btn-group">
+        <button class="admin-btn" onclick="clearCache()">Clear Cache</button>
+        <button class="admin-btn-danger" onclick="resetDefaults()">Reset to Defaults</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-brand">
+      <img src="../assets/logo.png" alt="Logo" class="footer-logo">
+      <span>Al Mehdaviat Network</span>
+    </div>
+    <div class="footer-links">
+      <a href="../index.html">Home</a>
+      <a href="../live.html">Live</a>
+      <a href="https://www.youtube.com/@AlMehdaviat" target="_blank">YouTube</a>
+    </div>
+    <div class="footer-divider"></div>
+    <p class="footer-bottom">&copy; 2026 Al Mehdaviat Network | Made with <span class="heart">&hearts;</span> for Mola Hussain (AS)</p>
+  </footer>
+
+  <script>
+    const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const DAY_ICONS = ['☀️', '🌙', '🔥', '💧', '🌟', '📖', '🎶'];
+    let schedulerData = {};
+    let videoSlots = ['', '', '', '', '', ''];
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('statusMsg');
+      el.textContent = msg;
+      el.className = 'admin-status show ' + type;
+      setTimeout(() => { el.className = 'admin-status'; }, 2500);
+    }
+
+    // Video Slots
+    function initVideoSlots() {
+      const container = document.getElementById('videoSlots');
+      container.innerHTML = '';
+      container.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;';
+      videoSlots.forEach((url, i) => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:0.8rem;border:1px solid var(--border);border-radius:10px;background:var(--bg-secondary);';
+        const videoId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        const thumb = videoId ? '<img src="https://img.youtube.com/vi/' + videoId[1] + '/mqdefault.jpg" style="width:100%;border-radius:6px;margin-top:6px;">' : '';
+        div.innerHTML = '<label style="font-weight:700;font-size:0.75rem;color:var(--gold);">Video ' + (i + 1) + '</label>' +
+          '<input class="admin-input" type="url" value="' + url + '" placeholder="YouTube URL" oninput="videoSlots[' + i + ']=this.value" style="margin-top:4px;font-size:0.8rem;padding:6px 8px;">' + thumb;
+        container.appendChild(div);
+      });
+    }
+
+    function saveVideos() {
+      localStorage.setItem('almehdaviat_videos', JSON.stringify(videoSlots));
+      showStatus('Videos saved!', 'success');
+      initVideoSlots();
+    }
+
+    function loadVideos() {
+      try {
+        const saved = localStorage.getItem('almehdaviat_videos');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          videoSlots = parsed.concat(['', '', '', '', '', '']).slice(0, 6);
+        }
+      } catch(e) {}
+    }
+
+    // Ad functions
+    function loadAd() {
+      try {
+        const ad = JSON.parse(localStorage.getItem('almehdaviat_ad') || 'null');
+        if (ad) {
+          document.getElementById('adTitle').value = ad.title || '';
+          document.getElementById('adUrl').value = ad.videoUrl || '';
+          document.getElementById('adDesc').value = ad.description || '';
+          showAdPreview(ad);
+        }
+      } catch(e) {}
+    }
+
+    function showAdPreview(ad) {
+      const preview = document.getElementById('adPreview');
+      if (!ad || !ad.videoUrl) { preview.style.display = 'none'; return; }
+      const match = ad.videoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (!match) { preview.style.display = 'none'; return; }
+      preview.style.display = 'block';
+      preview.innerHTML = '<iframe src="https://www.youtube.com/embed/' + match[1] + '"></iframe>' +
+        '<div class="ad-preview-info"><h4>' + (ad.title || 'Untitled') + '</h4>' +
+        '<p>' + (ad.description || '') + '</p></div>';
+    }
+
+    function saveAd() {
+      const title = document.getElementById('adTitle').value.trim();
+      const videoUrl = document.getElementById('adUrl').value.trim();
+      const description = document.getElementById('adDesc').value.trim();
+      if (!videoUrl) { showStatus('Please enter a YouTube URL', 'error'); return; }
+      const match = videoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (!match) { showStatus('Invalid YouTube URL', 'error'); return; }
+      const ad = { title, videoUrl, description };
+      localStorage.setItem('almehdaviat_ad', JSON.stringify(ad));
+      showAdPreview(ad);
+      showStatus('Ad saved successfully!', 'success');
+    }
+
+    function removeAd() {
+      localStorage.removeItem('almehdaviat_ad');
+      document.getElementById('adTitle').value = '';
+      document.getElementById('adUrl').value = '';
+      document.getElementById('adDesc').value = '';
+      document.getElementById('adPreview').style.display = 'none';
+      showStatus('Ad removed!', 'success');
+    }
+
+    // Tagline
+    function loadTagline() {
+      const saved = localStorage.getItem('almehdaviat_tagline');
+      if (saved) document.getElementById('taglineInput').value = saved;
+    }
+    function saveTagline() {
+      const val = document.getElementById('taglineInput').value.trim();
+      localStorage.setItem('almehdaviat_tagline', val);
+      showStatus('Tagline saved!', 'success');
+    }
+
+    // Scheduler
+    function initScheduler() {
+      const grid = document.getElementById('schedulerGrid');
+      grid.innerHTML = '';
+      DAYS.forEach((day, i) => {
+        const slot = document.createElement('div');
+        slot.className = 'admin-image-slot';
+        slot.id = 'slot-' + i;
+        const saved = schedulerData[i];
+        if (saved) {
+          slot.innerHTML = '<img src="' + saved + '" alt="' + day + '">'
+            + '<button class="remove-img" onclick="removeImage(event, ' + i + ')">&times;</button>'
+            + '<span class="day-label" style="position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:6px;">' + DAY_ICONS[i] + ' ' + day + '</span>'
+            + '<input type="file" accept="image/*" onchange="handleImageUpload(event, ' + i + ')">';
+        } else {
+          slot.innerHTML = '<span style="font-size:1.5rem;">' + DAY_ICONS[i] + '</span>'
+            + '<span class="day-label">' + day + '</span>'
+            + '<span class="day-sublabel">Click to upload</span>'
+            + '<input type="file" accept="image/*" onchange="handleImageUpload(event, ' + i + ')">';
+        }
+        grid.appendChild(slot);
+      });
+    }
+    function handleImageUpload(e, dayIndex) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) { showStatus('Image must be under 2MB.', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = function(ev) { schedulerData[dayIndex] = ev.target.result; initScheduler(); };
+      reader.readAsDataURL(file);
+    }
+    function removeImage(e, dayIndex) {
+      e.stopPropagation(); e.preventDefault();
+      delete schedulerData[dayIndex]; initScheduler();
+    }
+    function saveScheduler() {
+      localStorage.setItem('almehdaviat_scheduler', JSON.stringify(schedulerData));
+      showStatus('Schedule saved!', 'success');
+      updateAnalytics();
+    }
+    function loadScheduler() {
+      const saved = localStorage.getItem('almehdaviat_scheduler');
+      if (saved) { try { schedulerData = JSON.parse(saved); } catch(e) { schedulerData = {}; } }
+    }
+
+    // Analytics
+    function updateAnalytics() {
+      const imgCount = Object.keys(schedulerData).length;
+      document.getElementById('schedulerImages').textContent = imgCount;
+      let totalBytes = 0;
+      try {
+        for (let k in localStorage) {
+          if (localStorage.hasOwnProperty(k)) totalBytes += (localStorage[k] || '').length * 2;
+        }
+      } catch(e) {}
+      const kb = Math.round(totalBytes / 1024);
+      document.getElementById('storageUsed').textContent = kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb + ' KB';
+    }
+
+    // Settings
+    function clearCache() {
+      const keysToKeep = ['almehdaviat_tagline', 'almehdaviat_scheduler', 'almehdaviat_ad', 'almehdaviat_videos'];
+      Object.keys(localStorage).forEach(k => { if (!keysToKeep.includes(k)) localStorage.removeItem(k); });
+      document.getElementById('cacheStatus').textContent = 'Cleared';
+      showStatus('Cache cleared!', 'success');
+    }
+    function resetDefaults() {
+      if (!confirm('This will remove ALL saved data. Are you sure?')) return;
+      localStorage.clear();
+      schedulerData = {};
+      document.getElementById('taglineInput').value = '';
+      document.getElementById('adTitle').value = '';
+      document.getElementById('adUrl').value = '';
+      document.getElementById('adDesc').value = '';
+      document.getElementById('adPreview').style.display = 'none';
+      videoSlots = ['', '', '', '', '', ''];
+      document.getElementById('cacheStatus').textContent = 'Cleared';
+      initScheduler(); updateAnalytics(); initVideoSlots();
+      showStatus('All data reset.', 'success');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadTagline(); loadScheduler(); initScheduler(); updateAnalytics(); loadAd(); loadVideos(); initVideoSlots();
+      const apiKey = localStorage.getItem('almehdaviat_youtube_api_key');
+      if (apiKey) document.getElementById('apiKeyDisplay').textContent = apiKey.substring(0, 8) + '...' + apiKey.substring(apiKey.length - 4);
+    });
+  </script>
+</body>
+</html>

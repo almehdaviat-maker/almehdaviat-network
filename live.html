@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live - Al Mehdaviat Network</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: var(--bg-primary); }
+    .live-page {
+      margin-top: 72px;
+      min-height: calc(100vh - 72px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .live-state { text-align: center; max-width: 600px; }
+    .live-embed { width: 100%; max-width: 1400px; margin: 0 auto; }
+    .live-embed iframe {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border: none;
+      border-radius: 16px;
+      background: #000;
+    }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      border-radius: 20px;
+      background: rgba(192, 57, 43, 0.15);
+      color: var(--red-light);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 1.5rem;
+    }
+    .live-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: livePulse 1.5s infinite;
+    }
+    .not-live-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    .not-live-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    .not-live-sub {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+    .yt-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--red-dark), var(--red));
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(192, 57, 43, 0.3);
+    }
+    .yt-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(192, 57, 43, 0.5);
+    }
+    .live-title {
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 1rem;
+      font-size: 1.1rem;
+    }
+    @media (max-width: 768px) {
+      .live-page { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      <img src="assets/logo.png" alt="Logo" class="nav-logo-img">
+      <span class="nav-title">Al Mehdaviat Network</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="live.html" class="active nav-live-btn">Live</a></li>
+      <li><a href="tour.html">Virtual Tour</a></li>
+    </ul>
+    <button class="mobile-menu-btn">☰</button>
+  </nav>
+
+  <div class="live-page">
+    <div class="live-state" id="liveState">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Checking live status...</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-brand">
+      <img src="assets/logo.png" alt="Logo" class="footer-logo">
+      <span>Al Mehdaviat Network</span>
+    </div>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="live.html">Live</a>
+      <a href="https://www.youtube.com/@AlMehdaviat" target="_blank">YouTube</a>
+    </div>
+    <div class="footer-divider"></div>
+    <p class="footer-bottom">© 2026 Al Mehdaviat Network | Made with <span class="heart">♥</span> for Mola Hussain (AS)</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      var state = document.getElementById('liveState');
+
+      // Normal live check via API (100 units, cached 4hr)
+      try {
+        var live = await YouTubeAPI.checkLiveNow();
+        if (live) {
+          state.innerHTML =
+            '<div class="live-badge">LIVE NOW</div>' +
+            '<div class="live-embed"><iframe src="' + live.embedUrl + '?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>' +
+            '<div class="live-title">' + live.title + '</div>';
+        } else {
+          state.innerHTML =
+            '<div class="not-live-icon">🔴</div>' +
+            '<div class="not-live-title">No Live Stream Right Now</div>' +
+            '<div class="not-live-sub">Visit our YouTube channel for previous live streams and recordings.</div>' +
+            '<a href="https://www.youtube.com/@AlMehdaviat/streams" target="_blank" class="yt-btn">📺 Visit YouTube for Live Streams</a>';
+        }
+      } catch(e) {
+        state.innerHTML =
+          '<div class="not-live-icon">🔴</div>' +
+          '<div class="not-live-title">No Live Stream Right Now</div>' +
+          '<div class="not-live-sub">Visit our YouTube channel for previous live streams and recordings.</div>' +
+          '<a href="https://www.youtube.com/@AlMehdaviat/streams" target="_blank" class="yt-btn">📺 Visit YouTube for Live Streams</a>';
+      }
+    });
+  </script>
+</body>
+</html>

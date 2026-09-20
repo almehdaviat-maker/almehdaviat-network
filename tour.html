@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Tour - Imam Ali Shrine (AS)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: #000; margin: 0; overflow: hidden; }
+    .tour-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+    }
+    .tour-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #d4a843;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: opacity 0.3s;
+    }
+    .tour-back:hover { opacity: 0.7; }
+    .tour-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #7a5a10, #e8c050, #7a5a10);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: metalFlow 5s ease-in-out infinite;
+    }
+    .tour-frame {
+      width: 100%;
+      height: 100vh;
+      border: none;
+    }
+    .audio-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid #d4a843;
+      background: rgba(3,3,8,0.85);
+      color: #d4a843;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      backdrop-filter: blur(6px);
+    }
+    .audio-toggle:hover { background: #d4a843; color: #030308; }
+    .audio-toggle.playing { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(212,168,67,0); }
+    }
+    .audio-label {
+      position: fixed;
+      bottom: 78px;
+      right: 12px;
+      z-index: 100;
+      background: rgba(3,3,8,0.85);
+      color: #d4a843;
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(212,168,67,0.3);
+      text-align: center;
+      backdrop-filter: blur(6px);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="tour-nav">
+    <a href="index.html" class="tour-back">← Back to Home</a>
+    <div class="tour-title">Imam Ali Shrine (AS) — Virtual Tour</div>
+    <a href="live.html" class="tour-back" style="text-align:right">Live →</a>
+  </div>
+
+  <iframe class="tour-frame" src="https://www.imamali.net/vtour/" allowfullscreen></iframe>
+
+  <!-- Ziyarat Audio -->
+  <div class="audio-label">Ziyarat e Aminullah</div>
+  <button class="audio-toggle" id="audioToggle" title="Play / Pause Ziyarat Audio">🔇</button>
+  <audio id="ziyaratAudio" loop muted>
+    <source src="assets/ziyarat-aminullah.m4a" type="audio/mp4">
+  </audio>
+
+  <script>
+    (function() {
+      var audio = document.getElementById('ziyaratAudio');
+      var btn = document.getElementById('audioToggle');
+      var playing = false;
+
+      audio.volume = 1.0;
+
+      audio.play().then(function() {
+        audio.muted = false;
+        playing = true;
+        btn.textContent = '\u{1F50A}';
+        btn.classList.add('playing');
+      }).catch(function() {});
+
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (playing) {
+          audio.pause();
+          btn.textContent = '\u{1F507}';
+          btn.classList.remove('playing');
+        } else {
+          audio.play().then(function() {
+            audio.muted = false;
+            btn.textContent = '\u{1F50A}';
+            btn.classList.add('playing');
+          }).catch(function() {});
+        }
+        playing = !playing;
+      });
+    })();
+  </script>
+
+</body>
+</html>
