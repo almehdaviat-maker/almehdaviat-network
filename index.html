@@ -122,8 +122,15 @@
       if (heroBg) {
         var dayIndex = new Date().getDay();
         var scheduler = (siteData && siteData.scheduler) || {};
-        if (scheduler[dayIndex]) {
-          heroBg.style.backgroundImage = 'url("' + scheduler[dayIndex] + '")';
+        var dayImage = scheduler[dayIndex];
+        if (dayImage) {
+          if (typeof dayImage === 'object' && dayImage.src) {
+            heroBg.style.backgroundImage = 'url("' + dayImage.src + '")';
+            heroBg.style.backgroundPosition = dayImage.position || 'center center';
+            heroBg.style.backgroundSize = dayImage.zoom || 'cover';
+          } else if (typeof dayImage === 'string') {
+            heroBg.style.backgroundImage = 'url("' + dayImage + '")';
+          }
         } else {
           var svgImages = {
             0: 'assets/scheduler/sunday.svg', 1: 'assets/scheduler/monday.svg',

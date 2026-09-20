@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>Admin Dashboard - Al Mehdaviat Network</title>
-  <link rel="stylesheet" href="../css/style.css?v=2">
+  <link rel="stylesheet" href="../css/style.css?v=3">
   <style>
     .admin-title {
       font-family: 'Playfair Display', serif;
@@ -147,7 +147,25 @@
       justify-content: center;
       z-index: 5;
     }
+    .admin-image-slot .edit-img {
+      position: absolute;
+      top: 6px;
+      right: 36px;
+      background: rgba(212, 168, 67, 0.85);
+      border: none;
+      color: #fff;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.7rem;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
     .admin-image-slot:hover .remove-img { display: flex; }
+    .admin-image-slot:hover .edit-img { display: flex; }
     .admin-image-slot input[type="file"] {
       position: absolute;
       inset: 0;
@@ -196,6 +214,125 @@
       cursor: not-allowed;
       transform: none;
     }
+
+    /* Image Editor Modal */
+    .editor-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .editor-overlay.active { display: flex; }
+    .editor-modal {
+      background: var(--bg-card-solid);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+    .editor-modal h3 {
+      margin: 0 0 1rem;
+      font-size: 1.2rem;
+      color: var(--gold);
+    }
+    .editor-preview {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid var(--border-light);
+      position: relative;
+      cursor: grab;
+      background: #111;
+      margin-bottom: 1rem;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .editor-preview:active { cursor: grabbing; }
+    .editor-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      position: absolute;
+      transition: none;
+    }
+    .editor-controls {
+      margin-bottom: 1rem;
+    }
+    .editor-controls label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .editor-controls input[type="range"] {
+      width: 100%;
+      accent-color: var(--gold);
+    }
+    .editor-zoom-value {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .editor-position-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+    .editor-position-grid button {
+      padding: 10px 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .editor-position-grid button:hover,
+    .editor-position-grid button.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(212, 168, 67, 0.1);
+    }
+    .editor-actions {
+      display: flex;
+      gap: 0.8rem;
+    }
+    .editor-actions button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid var(--border);
+    }
+    .editor-save {
+      background: rgba(46, 204, 113, 0.15);
+      border-color: #2ecc71 !important;
+      color: #2ecc71;
+    }
+    .editor-save:hover { background: rgba(46, 204, 113, 0.25); }
+    .editor-cancel {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+    }
+    .editor-cancel:hover { background: rgba(255, 255, 255, 0.05); }
+
     @media (max-width: 768px) {
       .admin-page { padding: 1.5rem 1rem; }
       .admin-title { font-size: 1.8rem; }
@@ -203,6 +340,8 @@
       .admin-analytics-grid { grid-template-columns: repeat(2, 1fr); }
       .admin-settings-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
       #videoSlots { grid-template-columns: repeat(2, 1fr) !important; }
+      .editor-modal { padding: 1rem; }
+      .editor-position-grid button { padding: 8px 2px; font-size: 0.65rem; }
     }
   </style>
 </head>
@@ -225,16 +364,16 @@
 
     <div id="statusMsg" class="admin-status"></div>
 
-    <!-- Section A: Featured Videos -->
+    <!-- Featured Videos -->
     <div class="admin-card">
-      <h2>📹 Featured Videos (Home Page)</h2>
+      <h2>Featured Videos (Home Page)</h2>
       <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Paste YouTube video URLs to show on home page for all visitors.</p>
       <div id="videoSlots"></div>
     </div>
 
-    <!-- Section B: Ad Video -->
+    <!-- Featured Recording -->
     <div class="admin-card">
-      <h2>📢 Featured Recording</h2>
+      <h2>Featured Recording</h2>
       <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Add a YouTube video URL to show as featured recording on the home page.</p>
       <label class="admin-label" for="adTitleInput">Title</label>
       <input id="adTitleInput" class="admin-input" type="text" placeholder="e.g. Latest Majlis Recording" oninput="saveDraft()">
@@ -245,32 +384,32 @@
       <div id="adPreview" class="ad-preview" style="display:none"></div>
     </div>
 
-    <!-- Section C: Edit Content -->
+    <!-- Tagline -->
     <div class="admin-card">
-      <h2>✏️ Tagline</h2>
+      <h2>Tagline</h2>
       <label class="admin-label" for="taglineInput">Tagline Text</label>
       <textarea id="taglineInput" class="admin-input admin-textarea" placeholder="Enter site tagline..." oninput="saveDraft()"></textarea>
     </div>
 
-    <!-- DEPLOY BUTTON -->
+    <!-- Deploy Button -->
     <button class="deploy-btn" id="deployBtn" onclick="saveAndDeploy()">
-      🚀 Save &amp; Deploy to Website
+      Save &amp; Deploy to Website
     </button>
     <p style="text-align:center;color:var(--text-muted);font-size:0.8rem;margin-top:0.5rem">
       Saves changes to GitHub and auto-deploys to your live website (1-2 minutes)
     </p>
 
-    <!-- Section D: Image Scheduler (local only) -->
+    <!-- Image Scheduler -->
     <div class="admin-card">
-      <h2>📅 Image Scheduler <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400">(your browser only)</span></h2>
-      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Upload an image for each day of the week. These show as hero background.</p>
+      <h2>Image Scheduler <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400">(your browser only)</span></h2>
+      <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Upload an image for each day of the week. These show as hero background. Click the pencil icon to adjust position and zoom.</p>
       <div id="schedulerGrid" class="admin-grid"></div>
       <button class="admin-btn" onclick="saveScheduler()">Save Schedule</button>
     </div>
 
-    <!-- Section E: Settings -->
+    <!-- Settings -->
     <div class="admin-card">
-      <h2>⚙️ Settings</h2>
+      <h2>Settings</h2>
       <div class="admin-settings-row">
         <span class="admin-settings-label">Website Status</span>
         <span class="admin-settings-value" id="siteStatus">Checking...</span>
@@ -278,6 +417,36 @@
       <div class="admin-settings-row">
         <span class="admin-settings-label">Deploy Status</span>
         <span class="admin-settings-value" id="deployStatus">Ready</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Editor Modal -->
+  <div class="editor-overlay" id="editorOverlay">
+    <div class="editor-modal">
+      <h3>Edit Image Position</h3>
+      <div class="editor-preview" id="editorPreview">
+        <img id="editorImg" src="" alt="Preview">
+      </div>
+      <div class="editor-controls">
+        <label for="editorZoom">Zoom</label>
+        <input type="range" id="editorZoom" min="100" max="300" value="100" oninput="onEditorZoom(this.value)">
+        <div class="editor-zoom-value" id="editorZoomVal">100%</div>
+      </div>
+      <div class="editor-position-grid" id="editorPosGrid">
+        <button data-pos="0% 0%">Top Left</button>
+        <button data-pos="50% 0%">Top Center</button>
+        <button data-pos="100% 0%">Top Right</button>
+        <button data-pos="0% 50%">Center Left</button>
+        <button data-pos="50% 50%">Center</button>
+        <button data-pos="100% 50%">Center Right</button>
+        <button data-pos="0% 100%">Bottom Left</button>
+        <button data-pos="50% 100%">Bottom Center</button>
+        <button data-pos="100% 100%">Bottom Right</button>
+      </div>
+      <div class="editor-actions">
+        <button class="editor-cancel" onclick="closeEditor()">Cancel</button>
+        <button class="editor-save" onclick="saveEditor()">Save</button>
       </div>
     </div>
   </div>
@@ -297,39 +466,47 @@
   </footer>
 
   <script>
-    const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const DAY_ICONS = ['☀️', '🌙', '🔥', '💧', '🌟', '📖', '🎶'];
-    let schedulerData = {};
-    let videoSlots = ['', '', '', '', '', ''];
-    let siteData = { videos: ['', '', '', '', '', ''], tagline: '', ad: { title: '', videoUrl: '', description: '' }, scheduler: {} };
+    var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    var DAY_ICONS = ['☀️', '🌙', '🔥', '💧', '🌟', '📖', '🎶'];
+    var schedulerData = {};
+    var videoSlots = ['', '', '', '', '', ''];
+    var siteData = { videos: ['', '', '', '', '', ''], tagline: '', ad: { title: '', videoUrl: '', description: '' }, scheduler: {} };
+
+    var editorState = {
+      dayIndex: -1,
+      imgX: 50,
+      imgY: 50,
+      zoom: 100,
+      dragging: false,
+      startX: 0,
+      startY: 0,
+      startImgX: 0,
+      startImgY: 0
+    };
 
     function showStatus(msg, type) {
-      const el = document.getElementById('statusMsg');
+      var el = document.getElementById('statusMsg');
       el.textContent = msg;
       el.className = 'admin-status show ' + type;
-      if (type !== 'deploying') setTimeout(() => { el.className = 'admin-status'; }, 3000);
+      if (type !== 'deploying') setTimeout(function() { el.className = 'admin-status'; }, 3000);
     }
 
-    // Load existing data from JSON (with localStorage fallback)
     async function loadSiteData() {
-      // First try JSON file (latest deployed data)
       try {
-        const resp = await fetch('../data/site-data.json?t=' + Date.now());
+        var resp = await fetch('../data/site-data.json?t=' + Date.now());
         if (resp.ok) {
           siteData = await resp.json();
           localStorage.setItem('almehdaviat_draft', JSON.stringify(siteData));
           document.getElementById('siteStatus').textContent = 'Connected';
         }
       } catch(e) {
-        // If JSON fails, try localStorage draft
         try {
-          const draft = localStorage.getItem('almehdaviat_draft');
+          var draft = localStorage.getItem('almehdaviat_draft');
           if (draft) siteData = JSON.parse(draft);
           document.getElementById('siteStatus').textContent = 'Offline (draft)';
         } catch(e2) {}
       }
 
-      // Apply data to form
       videoSlots = (siteData.videos || []).concat(['', '', '', '', '', '']).slice(0, 6);
       document.getElementById('taglineInput').value = siteData.tagline || '';
       if (siteData.ad) {
@@ -340,17 +517,16 @@
       }
     }
 
-    // Video Slots
     function initVideoSlots() {
-      const container = document.getElementById('videoSlots');
+      var container = document.getElementById('videoSlots');
       container.innerHTML = '';
       container.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;';
-      videoSlots.forEach((url, i) => {
-        const div = document.createElement('div');
+      videoSlots.forEach(function(url, i) {
+        var div = document.createElement('div');
         div.style.cssText = 'padding:0.8rem;border:1px solid var(--border);border-radius:10px;background:var(--bg-secondary);';
         div.id = 'videoSlot-' + i;
-        const videoId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        const thumb = videoId ? '<img src="https://img.youtube.com/vi/' + videoId[1] + '/mqdefault.jpg" style="width:100%;border-radius:6px;margin-top:6px;">' : '';
+        var videoId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        var thumb = videoId ? '<img src="https://img.youtube.com/vi/' + videoId[1] + '/mqdefault.jpg" style="width:100%;border-radius:6px;margin-top:6px;">' : '';
         div.innerHTML = '<label style="font-weight:700;font-size:0.75rem;color:var(--gold);">Video ' + (i + 1) + '</label>' +
           '<input class="admin-input" type="url" value="' + url + '" placeholder="YouTube URL" oninput="updateVideoSlot(' + i + ', this.value)" style="margin-top:4px;font-size:0.8rem;padding:6px 8px;">' +
           '<div class="thumb-preview">' + thumb + '</div>';
@@ -360,28 +536,27 @@
 
     function updateVideoSlot(i, value) {
       videoSlots[i] = value;
-      const slot = document.getElementById('videoSlot-' + i);
-      const videoId = value.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-      const thumbEl = slot.querySelector('.thumb-preview');
+      var slot = document.getElementById('videoSlot-' + i);
+      var videoId = value.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      var thumbEl = slot.querySelector('.thumb-preview');
       thumbEl.innerHTML = videoId ? '<img src="https://img.youtube.com/vi/' + videoId[1] + '/mqdefault.jpg" style="width:100%;border-radius:6px;margin-top:6px;">' : '';
       saveDraft();
     }
 
     function saveDraft() {
-      const adTitle = document.getElementById('adTitleInput').value.trim();
-      const adUrl = document.getElementById('adUrl').value.trim();
-      const adDesc = document.getElementById('adDesc').value.trim();
+      var adTitle = document.getElementById('adTitleInput').value.trim();
+      var adUrl = document.getElementById('adUrl').value.trim();
+      var adDesc = document.getElementById('adDesc').value.trim();
       siteData.videos = videoSlots;
       siteData.tagline = document.getElementById('taglineInput').value.trim();
       siteData.ad = { title: adTitle, videoUrl: adUrl, description: adDesc };
       localStorage.setItem('almehdaviat_draft', JSON.stringify(siteData));
     }
 
-    // Ad preview
     function showAdPreview(ad) {
-      const preview = document.getElementById('adPreview');
+      var preview = document.getElementById('adPreview');
       if (!ad || !ad.videoUrl) { preview.style.display = 'none'; return; }
-      const match = ad.videoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      var match = ad.videoUrl.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
       if (!match) { preview.style.display = 'none'; return; }
       preview.style.display = 'block';
       preview.innerHTML = '<iframe src="https://www.youtube.com/embed/' + match[1] + '"></iframe>' +
@@ -389,17 +564,20 @@
         '<p>' + (ad.description || '') + '</p></div>';
     }
 
-    // Scheduler (local only)
     function initScheduler() {
-      const grid = document.getElementById('schedulerGrid');
+      var grid = document.getElementById('schedulerGrid');
       grid.innerHTML = '';
-      DAYS.forEach((day, i) => {
-        const slot = document.createElement('div');
+      DAYS.forEach(function(day, i) {
+        var slot = document.createElement('div');
         slot.className = 'admin-image-slot';
         slot.id = 'slot-' + i;
-        const saved = schedulerData[i];
+        var saved = schedulerData[i];
         if (saved) {
-          slot.innerHTML = '<img src="' + saved + '" alt="' + day + '">'
+          var src = typeof saved === 'string' ? saved : (saved.src || '');
+          var pos = (typeof saved === 'object' && saved.position) ? saved.position : 'center center';
+          var zoom = (typeof saved === 'object' && saved.zoom) ? saved.zoom : '100%';
+          slot.innerHTML = '<div style="width:100%;height:100%;background-image:url(' + src + ');background-position:' + pos + ';background-size:' + zoom + ' auto;background-repeat:no-repeat;position:absolute;inset:0;border-radius:inherit;"></div>'
+            + '<button class="edit-img" onclick="openEditor(event, ' + i + ')">&#9998;</button>'
             + '<button class="remove-img" onclick="removeImage(event, ' + i + ')">&times;</button>'
             + '<span class="day-label" style="position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.7);padding:4px 10px;border-radius:6px;">' + DAY_ICONS[i] + ' ' + day + '</span>'
             + '<input type="file" accept="image/*" onchange="handleImageUpload(event, ' + i + ')">';
@@ -412,40 +590,215 @@
         grid.appendChild(slot);
       });
     }
+
     function handleImageUpload(e, dayIndex) {
-      const file = e.target.files[0];
+      var file = e.target.files[0];
       if (!file) return;
       if (file.size > 2 * 1024 * 1024) { showStatus('Image must be under 2MB.', 'error'); return; }
-      const reader = new FileReader();
-      reader.onload = function(ev) { schedulerData[dayIndex] = ev.target.result; initScheduler(); };
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        schedulerData[dayIndex] = { src: ev.target.result, position: 'center center', zoom: '100%' };
+        initScheduler();
+      };
       reader.readAsDataURL(file);
     }
+
     function removeImage(e, dayIndex) {
-      e.stopPropagation(); e.preventDefault();
-      delete schedulerData[dayIndex]; initScheduler();
+      e.stopPropagation();
+      e.preventDefault();
+      delete schedulerData[dayIndex];
+      initScheduler();
     }
+
     function saveScheduler() {
       localStorage.setItem('almehdaviat_scheduler', JSON.stringify(schedulerData));
       showStatus('Schedule saved (local only)!', 'success');
     }
+
     function loadScheduler() {
-      const saved = localStorage.getItem('almehdaviat_scheduler');
-      if (saved) { try { schedulerData = JSON.parse(saved); } catch(e) { schedulerData = {}; } }
+      var saved = localStorage.getItem('almehdaviat_scheduler');
+      if (saved) {
+        try {
+          var parsed = JSON.parse(saved);
+          var keys = Object.keys(parsed);
+          for (var k = 0; k < keys.length; k++) {
+            var key = keys[k];
+            var val = parsed[key];
+            if (typeof val === 'string') {
+              parsed[key] = { src: val, position: 'center center', zoom: '100%' };
+            }
+          }
+          schedulerData = parsed;
+        } catch(e) { schedulerData = {}; }
+      }
     }
 
-    // SAVE & DEPLOY
+    /* --- Image Editor --- */
+    function openEditor(e, dayIndex) {
+      e.stopPropagation();
+      e.preventDefault();
+      var entry = schedulerData[dayIndex];
+      if (!entry) return;
+      var src = typeof entry === 'string' ? entry : (entry.src || '');
+      var pos = (typeof entry === 'object' && entry.position) ? entry.position : 'center center';
+      var zoom = (typeof entry === 'object' && entry.zoom) ? entry.zoom : '100%';
+
+      var posParts = pos.split(' ');
+      var imgX = parseFloat(posParts[0]) || 50;
+      var imgY = parseFloat(posParts[1]) || 50;
+      var zoomVal = parseInt(zoom) || 100;
+
+      editorState.dayIndex = dayIndex;
+      editorState.imgX = imgX;
+      editorState.imgY = imgY;
+      editorState.zoom = zoomVal;
+
+      var img = document.getElementById('editorImg');
+      img.src = src;
+      document.getElementById('editorZoom').value = zoomVal;
+      document.getElementById('editorZoomVal').textContent = zoomVal + '%';
+
+      updateEditorImage();
+      highlightActivePosition();
+      document.getElementById('editorOverlay').classList.add('active');
+    }
+
+    function closeEditor() {
+      document.getElementById('editorOverlay').classList.remove('active');
+      editorState.dayIndex = -1;
+    }
+
+    function updateEditorImage() {
+      var img = document.getElementById('editorImg');
+      var preview = document.getElementById('editorPreview');
+      var pw = preview.offsetWidth;
+      var ph = preview.offsetHeight;
+      var scale = editorState.zoom / 100;
+      var imgW = pw * scale;
+      var imgH = ph * scale;
+      var offsetX = (pw - imgW) * (editorState.imgX / 100);
+      var offsetY = (ph - imgH) * (editorState.imgY / 100);
+      img.style.left = offsetX + 'px';
+      img.style.top = offsetY + 'px';
+      img.style.width = imgW + 'px';
+      img.style.height = imgH + 'px';
+    }
+
+    function onEditorZoom(val) {
+      editorState.zoom = parseInt(val);
+      document.getElementById('editorZoomVal').textContent = val + '%';
+      updateEditorImage();
+      highlightActivePosition();
+    }
+
+    function highlightActivePosition() {
+      var buttons = document.getElementById('editorPosGrid').querySelectorAll('button');
+      var posStr = Math.round(editorState.imgX) + '% ' + Math.round(editorState.imgY) + '%';
+      for (var b = 0; b < buttons.length; b++) {
+        buttons[b].classList.remove('active');
+        if (buttons[b].getAttribute('data-pos') === posStr) {
+          buttons[b].classList.add('active');
+        }
+      }
+    }
+
+    function saveEditor() {
+      var x = Math.max(0, Math.min(100, Math.round(editorState.imgX)));
+      var y = Math.max(0, Math.min(100, Math.round(editorState.imgY)));
+      var posStr = x + '% ' + y + '%';
+      var zoomStr = editorState.zoom + '%';
+      var dayIndex = editorState.dayIndex;
+
+      if (schedulerData[dayIndex] && typeof schedulerData[dayIndex] === 'object') {
+        schedulerData[dayIndex].position = posStr;
+        schedulerData[dayIndex].zoom = zoomStr;
+      } else if (typeof schedulerData[dayIndex] === 'string') {
+        schedulerData[dayIndex] = { src: schedulerData[dayIndex], position: posStr, zoom: zoomStr };
+      }
+
+      closeEditor();
+      initScheduler();
+    }
+
+    /* --- Drag support (mouse + touch) --- */
+    function getEventPos(e) {
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function onDragStart(e) {
+      if (editorState.dayIndex < 0) return;
+      e.preventDefault();
+      var pos = getEventPos(e);
+      editorState.dragging = true;
+      editorState.startX = pos.x;
+      editorState.startY = pos.y;
+      editorState.startImgX = editorState.imgX;
+      editorState.startImgY = editorState.imgY;
+    }
+
+    function onDragMove(e) {
+      if (!editorState.dragging) return;
+      e.preventDefault();
+      var pos = getEventPos(e);
+      var preview = document.getElementById('editorPreview');
+      var pw = preview.offsetWidth;
+      var ph = preview.offsetHeight;
+      var dx = pos.x - editorState.startX;
+      var dy = pos.y - editorState.startY;
+      var dxPct = (dx / pw) * 100;
+      var dyPct = (dy / ph) * 100;
+      editorState.imgX = Math.max(0, Math.min(100, editorState.startImgX + dxPct));
+      editorState.imgY = Math.max(0, Math.min(100, editorState.startImgY + dyPct));
+      updateEditorImage();
+      highlightActivePosition();
+    }
+
+    function onDragEnd() {
+      editorState.dragging = false;
+    }
+
+    (function() {
+      var preview = document.getElementById('editorPreview');
+      preview.addEventListener('mousedown', onDragStart);
+      preview.addEventListener('touchstart', onDragStart, { passive: false });
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('touchmove', onDragMove, { passive: false });
+      document.addEventListener('mouseup', onDragEnd);
+      document.addEventListener('touchend', onDragEnd);
+
+      var posGrid = document.getElementById('editorPosGrid');
+      posGrid.addEventListener('click', function(e) {
+        var btn = e.target.closest('button');
+        if (!btn) return;
+        var posStr = btn.getAttribute('data-pos');
+        if (!posStr) return;
+        var parts = posStr.split(' ');
+        editorState.imgX = parseFloat(parts[0]);
+        editorState.imgY = parseFloat(parts[1]);
+        updateEditorImage();
+        highlightActivePosition();
+      });
+    })();
+
+    document.getElementById('editorOverlay').addEventListener('click', function(e) {
+      if (e.target === this) closeEditor();
+    });
+
+    /* --- Deploy --- */
     async function saveAndDeploy() {
-      const btn = document.getElementById('deployBtn');
-      const deployStatus = document.getElementById('deployStatus');
+      var btn = document.getElementById('deployBtn');
+      var deployStatus = document.getElementById('deployStatus');
 
-      // Collect data from form
-      const videos = videoSlots.map(v => v.trim());
-      const tagline = document.getElementById('taglineInput').value.trim();
-      const adTitle = document.getElementById('adTitleInput').value.trim();
-      const adUrl = document.getElementById('adUrl').value.trim();
-      const adDesc = document.getElementById('adDesc').value.trim();
+      var videos = videoSlots.map(function(v) { return v.trim(); });
+      var tagline = document.getElementById('taglineInput').value.trim();
+      var adTitle = document.getElementById('adTitleInput').value.trim();
+      var adUrl = document.getElementById('adUrl').value.trim();
+      var adDesc = document.getElementById('adDesc').value.trim();
 
-      const data = {
+      var data = {
         videos: videos,
         tagline: tagline,
         ad: { title: adTitle, videoUrl: adUrl, description: adDesc },
@@ -453,18 +806,18 @@
       };
 
       btn.disabled = true;
-      btn.textContent = '⏳ Saving & Deploying...';
+      btn.textContent = 'Saving & Deploying...';
       deployStatus.textContent = 'Deploying...';
       showStatus('Saving to GitHub and deploying...', 'deploying');
 
       try {
-        const resp = await fetch('/.netlify/functions/save-data', {
+        var resp = await fetch('/.netlify/functions/save-data', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ data: data })
         });
 
-        const result = await resp.json();
+        var result = await resp.json();
 
         if (resp.ok && result.success) {
           showStatus('Deployed! Website will update in 1-2 minutes.', 'success');
@@ -479,11 +832,11 @@
       }
 
       btn.disabled = false;
-      btn.textContent = '🚀 Save & Deploy to Website';
+      btn.textContent = 'Save & Deploy to Website';
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      loadSiteData().then(() => {
+      loadSiteData().then(function() {
         initVideoSlots();
       });
       loadScheduler();
