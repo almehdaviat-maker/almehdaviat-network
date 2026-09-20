@@ -237,11 +237,11 @@
       <h2>📢 Featured Recording</h2>
       <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1rem;">Add a YouTube video URL to show as featured recording on the home page.</p>
       <label class="admin-label" for="adTitleInput">Title</label>
-      <input id="adTitleInput" class="admin-input" type="text" placeholder="e.g. Latest Majlis Recording">
+      <input id="adTitleInput" class="admin-input" type="text" placeholder="e.g. Latest Majlis Recording" oninput="saveDraft()">
       <label class="admin-label" for="adUrl" style="margin-top:0.8rem">YouTube Video URL</label>
-      <input id="adUrl" class="admin-input" type="url" placeholder="https://www.youtube.com/watch?v=...">
+      <input id="adUrl" class="admin-input" type="url" placeholder="https://www.youtube.com/watch?v=..." oninput="saveDraft()">
       <label class="admin-label" for="adDesc" style="margin-top:0.8rem">Description (optional)</label>
-      <input id="adDesc" class="admin-input" type="text" placeholder="Short description...">
+      <input id="adDesc" class="admin-input" type="text" placeholder="Short description..." oninput="saveDraft()">
       <div id="adPreview" class="ad-preview" style="display:none"></div>
     </div>
 
@@ -249,7 +249,7 @@
     <div class="admin-card">
       <h2>✏️ Tagline</h2>
       <label class="admin-label" for="taglineInput">Tagline Text</label>
-      <textarea id="taglineInput" class="admin-input admin-textarea" placeholder="Enter site tagline..."></textarea>
+      <textarea id="taglineInput" class="admin-input admin-textarea" placeholder="Enter site tagline..." oninput="saveDraft()"></textarea>
     </div>
 
     <!-- DEPLOY BUTTON -->
@@ -310,24 +310,33 @@
       if (type !== 'deploying') setTimeout(() => { el.className = 'admin-status'; }, 3000);
     }
 
-    // Load existing data from JSON
+    // Load existing data from JSON (with localStorage fallback)
     async function loadSiteData() {
+      // First try JSON file (latest deployed data)
       try {
         const resp = await fetch('../data/site-data.json?t=' + Date.now());
         if (resp.ok) {
           siteData = await resp.json();
-          videoSlots = (siteData.videos || []).concat(['', '', '', '', '', '']).slice(0, 6);
-          document.getElementById('taglineInput').value = siteData.tagline || '';
-          if (siteData.ad) {
-            document.getElementById('adTitleInput').value = siteData.ad.title || '';
-            document.getElementById('adUrl').value = siteData.ad.videoUrl || '';
-            document.getElementById('adDesc').value = siteData.ad.description || '';
-            showAdPreview(siteData.ad);
-          }
+          localStorage.setItem('almehdaviat_draft', JSON.stringify(siteData));
           document.getElementById('siteStatus').textContent = 'Connected';
         }
       } catch(e) {
-        document.getElementById('siteStatus').textContent = 'Error loading';
+        // If JSON fails, try localStorage draft
+        try {
+          const draft = localStorage.getItem('almehdaviat_draft');
+          if (draft) siteData = JSON.parse(draft);
+          document.getElementById('siteStatus').textContent = 'Offline (draft)';
+        } catch(e2) {}
+      }
+
+      // Apply data to form
+      videoSlots = (siteData.videos || []).concat(['', '', '', '', '', '']).slice(0, 6);
+      document.getElementById('taglineInput').value = siteData.tagline || '';
+      if (siteData.ad) {
+        document.getElementById('adTitleInput').value = siteData.ad.title || '';
+        document.getElementById('adUrl').value = siteData.ad.videoUrl || '';
+        document.getElementById('adDesc').value = siteData.ad.description || '';
+        showAdPreview(siteData.ad);
       }
     }
 
@@ -339,12 +348,33 @@
       videoSlots.forEach((url, i) => {
         const div = document.createElement('div');
         div.style.cssText = 'padding:0.8rem;border:1px solid var(--border);border-radius:10px;background:var(--bg-secondary);';
+        div.id = 'videoSlot-' + i;
         const videoId = url.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
         const thumb = videoId ? '<img src="https://img.youtube.com/vi/' + videoId[1] + '/mqdefault.jpg" style="width:100%;border-radius:6px;margin-top:6px;">' : '';
         div.innerHTML = '<label style="font-weight:700;font-size:0.75rem;color:var(--gold);">Video ' + (i + 1) + '</label>' +
-          '<input class="admin-input" type="url" value="' + url + '" placeholder="YouTube URL" oninput="videoSlots[' + i + ']=this.value" style="margin-top:4px;font-size:0.8rem;padding:6px 8px;">' + thumb;
+          '<input class="admin-input" type="url" value="' + url + '" placeholder="YouTube URL" oninput="updateVideoSlot(' + i + ', this.value)" style="margin-top:4px;font-size:0.8rem;padding:6px 8px;">' +
+          '<div class="thumb-preview">' + thumb + '</div>';
         container.appendChild(div);
       });
+    }
+
+    function updateVideoSlot(i, value) {
+      videoSlots[i] = value;
+      const slot = document.getElementById('videoSlot-' + i);
+      const videoId = value.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      const thumbEl = slot.querySelector('.thumb-preview');
+      thumbEl.innerHTML = videoId ? '<img src="https://img.youtube.com/vi/' + videoId[1] + '/mqdefault.jpg" style="width:100%;border-radius:6px;margin-top:6px;">' : '';
+      saveDraft();
+    }
+
+    function saveDraft() {
+      const adTitle = document.getElementById('adTitleInput').value.trim();
+      const adUrl = document.getElementById('adUrl').value.trim();
+      const adDesc = document.getElementById('adDesc').value.trim();
+      siteData.videos = videoSlots;
+      siteData.tagline = document.getElementById('taglineInput').value.trim();
+      siteData.ad = { title: adTitle, videoUrl: adUrl, description: adDesc };
+      localStorage.setItem('almehdaviat_draft', JSON.stringify(siteData));
     }
 
     // Ad preview
