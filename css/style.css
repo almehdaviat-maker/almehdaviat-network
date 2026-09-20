@@ -1038,11 +1038,29 @@ body::before {
 }
 
 @media (max-width: 480px) {
-  .hero { min-height: 50vh; }
+  .hero { min-height: 65vh; }
   .hero-title { font-size: 1.8rem; }
   .hero-logo { width: 110px; height: 110px; }
   .hero-actions { flex-direction: column; width: 100%; }
   .hero-btn { width: 100%; justify-content: center; }
+  .hero-bg::after {
+    background: linear-gradient(
+      to bottom,
+      rgba(3, 3, 8, 0.2) 0%,
+      rgba(3, 3, 8, 0.1) 30%,
+      rgba(3, 3, 8, 0.3) 60%,
+      rgba(3, 3, 8, 0.85) 85%,
+      rgba(3, 3, 8, 1) 100%
+    );
+  }
+  .hero-content {
+    padding: 1.5rem 1rem;
+    background: rgba(3, 3, 8, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .hero-subtitle { text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+  .hero-title { text-shadow: 0 2px 12px rgba(0,0,0,0.7); }
 }
 
 /* ===== LIVE NAV BUTTON ===== */
