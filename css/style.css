@@ -1496,3 +1496,18 @@ body::before {
   transform: translateY(-3px);
   box-shadow: 0 8px 30px rgba(192, 57, 43, 0.5);
 }
+
+/* Hide Netlify Badge */
+[data-netlify-badge],
+.netlify-badge,
+a[href*="netlify.com"][href*="badge"],
+div[style*="netlify"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
