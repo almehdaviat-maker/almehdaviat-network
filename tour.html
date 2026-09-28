@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Virtual Tour - Imam Ali Shrine (AS) | Al Mehdaviat Network</title>
-  <meta name="description" content="Experience 360° virtual tour of Imam Ali Holy Shrine in Najaf. With Ziyarat-e-Aminullah recitation in background.">
-  <meta property="og:title" content="Virtual Tour - Imam Ali Shrine (AS) | Al Mehdaviat Network">
-  <meta property="og:description" content="Experience 360° virtual tour of Imam Ali Holy Shrine in Najaf. With Ziyarat-e-Aminullah recitation.">
+  <title>Virtual Tour - Coming Soon | Al Mehdaviat Network</title>
+  <meta name="description" content="Virtual tours of holy shrines coming soon to Al Mehdaviat Network.">
+  <meta property="og:title" content="Virtual Tour - Coming Soon | Al Mehdaviat Network">
+  <meta property="og:description" content="Virtual tours of holy shrines coming soon.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://eloquent-starship-5e300b.netlify.app/tour.html">
   <meta property="og:image" content="https://eloquent-starship-5e300b.netlify.app/assets/logo.png">
@@ -22,99 +22,79 @@
     gtag('config', 'G-BGJDWPW468');
   </script>
   <style>
-    body { background: #000; margin: 0; overflow: hidden; }
+    body { background: var(--bg-primary); margin: 0; font-family: 'Inter', sans-serif; }
     .tour-nav {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 12px 20px;
-      background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+      background: linear-gradient(180deg, rgba(3,3,8,0.95) 0%, transparent 100%);
     }
     .tour-back {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: #d4a843;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: opacity 0.3s;
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--gold); text-decoration: none;
+      font-weight: 600; font-size: 0.9rem; transition: opacity 0.3s;
     }
     .tour-back:hover { opacity: 0.7; }
     .tour-title {
       font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
-      font-weight: 800;
+      font-size: 1.1rem; font-weight: 800;
       background: linear-gradient(135deg, #7a5a10, #e8c050, #7a5a10);
       background-size: 300% 300%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       animation: metalFlow 5s ease-in-out infinite;
     }
-    .tour-frame {
-      width: 100%;
-      height: 100vh;
-      border: none;
+    .coming-soon {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 2rem;
     }
+    .coming-icon { font-size: 4rem; margin-bottom: 1.5rem; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .coming-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold)); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: metalFlow 5s ease-in-out infinite; }
+    .coming-text { color: var(--text-secondary); font-size: 1.1rem; max-width: 500px; line-height: 1.7; margin-bottom: 2rem; }
+    .coming-list { text-align: right; direction: rtl; color: var(--text-secondary); font-size: 1rem; line-height: 2; }
+    .coming-list span { color: var(--gold); font-weight: 600; }
     .audio-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 100;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: 2px solid #d4a843;
-      background: rgba(3,3,8,0.85);
-      color: #d4a843;
-      font-size: 1.3rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s;
-      backdrop-filter: blur(6px);
+      position: fixed; bottom: 20px; right: 20px; z-index: 100;
+      width: 50px; height: 50px; border-radius: 50%;
+      border: 2px solid var(--gold); background: rgba(3,3,8,0.85);
+      color: var(--gold); font-size: 1.3rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s; backdrop-filter: blur(6px);
     }
-    .audio-toggle:hover { background: #d4a843; color: #030308; }
+    .audio-toggle:hover { background: var(--gold); color: var(--bg-primary); }
     .audio-toggle.playing { animation: pulse 2s ease-in-out infinite; }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); }
-      50% { box-shadow: 0 0 0 12px rgba(212,168,67,0); }
-    }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); } 50% { box-shadow: 0 0 0 12px rgba(212,168,67,0); } }
     .audio-label {
-      position: fixed;
-      bottom: 78px;
-      right: 12px;
-      z-index: 100;
-      background: rgba(3,3,8,0.85);
-      color: #d4a843;
-      font-size: 0.7rem;
-      padding: 4px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(212,168,67,0.3);
-      text-align: center;
-      backdrop-filter: blur(6px);
-      pointer-events: none;
-      white-space: nowrap;
+      position: fixed; bottom: 78px; right: 12px; z-index: 100;
+      background: rgba(3,3,8,0.85); color: var(--gold); font-size: 0.7rem;
+      padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(212,168,67,0.3);
+      text-align: center; backdrop-filter: blur(6px); pointer-events: none; white-space: nowrap;
     }
-
   </style>
 </head>
 <body>
 
   <div class="tour-nav">
     <a href="index.html" class="tour-back">← Back to Home</a>
-    <div class="tour-title">Imam Ali Shrine (AS) — Virtual Tour</div>
+    <div class="tour-title">Virtual Tours</div>
     <a href="live.html" class="tour-back" style="text-align:right">Live →</a>
   </div>
 
-  <iframe class="tour-frame" src="https://www.imamali.net/vtour/" allowfullscreen></iframe>
+  <div class="coming-soon">
+    <div class="coming-icon">🕌</div>
+    <h1 class="coming-title">Virtual Tours Coming Soon</h1>
+    <p class="coming-text">We are working on bringing you immersive 360° virtual tours of the holy shrines. This feature will be available once we have proper permissions or create our own tours.</p>
+    <div class="coming-list">
+      <div>🔸 <span>Imam Ali Shrine (AS)</span> — Najaf</div>
+      <div>🔸 <span>Imam Hussain Shrine (AS)</span> — Karbala</div>
+      <div>🔸 <span>Maula Abbas Shrine (AS)</span> — Karbala</div>
+      <div>🔸 <span>Bainul Harmain</span> — Karbala</div>
+      <div>🔸 <span>Imam Reza Shrine (AS)</span> — Mashhad</div>
+    </div>
+  </div>
 
   <!-- Ziyarat Audio -->
   <div class="audio-label">Ziyarat e Aminullah</div>
