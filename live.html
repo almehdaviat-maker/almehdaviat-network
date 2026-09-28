@@ -33,8 +33,10 @@
       align-items: center;
       justify-content: center;
       padding: 2rem;
+      width: 100%;
     }
     .live-state { text-align: center; max-width: 600px; }
+    .live-state.live-active { max-width: 1400px; }
     .live-embed { width: 100%; max-width: 1400px; margin: 0 auto; }
     .live-embed iframe {
       width: 100%;
@@ -176,12 +178,14 @@
       try {
         var live = await YouTubeAPI.checkLiveNow();
         if (live) {
+          state.classList.add('live-active');
           state.innerHTML =
             '<div class="live-badge">LIVE NOW</div>' +
             '<div class="live-embed"><iframe src="' + live.embedUrl + '?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>' +
             '<div class="live-title">' + live.title + '</div>' +
             '<button class="refresh-btn" onclick="checkLive()">🔄 Refresh Status</button>';
         } else {
+          state.classList.remove('live-active');
           state.innerHTML =
             '<div class="not-live-icon">🔴</div>' +
             '<div class="not-live-title">No Live Stream Right Now</div>' +
@@ -190,6 +194,7 @@
             '<br><button class="refresh-btn" onclick="checkLive()">🔄 Check Again</button>';
         }
       } catch(e) {
+        state.classList.remove('live-active');
         state.innerHTML =
           '<div class="not-live-icon">🔴</div>' +
           '<div class="not-live-title">Unable to Check Live Status</div>' +
