@@ -129,7 +129,7 @@ const YouTubeAPI = {
 
   async checkLiveNow() {
     const key = `${this.CACHE_KEY}_live`;
-    const cached = this._getCache(key, this.CACHE_4H);
+    const cached = this._getCache(key, 60 * 1000);
     if (cached !== undefined && cached !== null) return cached;
 
     try {

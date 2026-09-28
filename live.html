@@ -106,6 +106,15 @@
       margin-top: 1rem;
       font-size: 1.1rem;
     }
+    .refresh-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 24px; border-radius: 12px;
+      background: rgba(212,168,67,0.15); border: 1px solid rgba(212,168,67,0.4);
+      color: var(--gold); font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; margin-top: 1.5rem; transition: all 0.3s;
+    }
+    .refresh-btn:hover { background: rgba(212,168,67,0.3); transform: translateY(-2px); }
+    .api-error { color: var(--red-light); font-size: 0.85rem; margin-top: 1rem; padding: 8px 16px; background: rgba(192,57,43,0.1); border-radius: 8px; border: 1px solid rgba(192,57,43,0.3); }
     @media (max-width: 768px) {
       .live-page { padding: 1rem; }
     }
@@ -152,32 +161,44 @@
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      var state = document.getElementById('liveState');
+    document.addEventListener('DOMContentLoaded', function() {
+      checkLive();
+    });
 
-      // Normal live check via API (100 units, cached 4hr)
+    async function checkLive() {
+      var state = document.getElementById('liveState');
+      state.innerHTML =
+        '<div class="loading">' +
+        '<div class="loading-spinner"></div>' +
+        '<div class="loading-text">Checking live status...</div>' +
+        '</div>';
+
       try {
         var live = await YouTubeAPI.checkLiveNow();
         if (live) {
           state.innerHTML =
             '<div class="live-badge">LIVE NOW</div>' +
             '<div class="live-embed"><iframe src="' + live.embedUrl + '?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>' +
-            '<div class="live-title">' + live.title + '</div>';
+            '<div class="live-title">' + live.title + '</div>' +
+            '<button class="refresh-btn" onclick="checkLive()">🔄 Refresh Status</button>';
         } else {
           state.innerHTML =
             '<div class="not-live-icon">🔴</div>' +
             '<div class="not-live-title">No Live Stream Right Now</div>' +
             '<div class="not-live-sub">Visit our YouTube channel for previous live streams and recordings.</div>' +
-            '<a href="https://www.youtube.com/@AlMehdaviat/streams" target="_blank" class="yt-btn">📺 Visit YouTube for Live Streams</a>';
+            '<a href="https://www.youtube.com/@AlMehdaviat/streams" target="_blank" class="yt-btn">📺 Visit YouTube for Live Streams</a>' +
+            '<br><button class="refresh-btn" onclick="checkLive()">🔄 Check Again</button>';
         }
       } catch(e) {
         state.innerHTML =
           '<div class="not-live-icon">🔴</div>' +
-          '<div class="not-live-title">No Live Stream Right Now</div>' +
-          '<div class="not-live-sub">Visit our YouTube channel for previous live streams and recordings.</div>' +
-          '<a href="https://www.youtube.com/@AlMehdaviat/streams" target="_blank" class="yt-btn">📺 Visit YouTube for Live Streams</a>';
+          '<div class="not-live-title">Unable to Check Live Status</div>' +
+          '<div class="not-live-sub">Visit our YouTube channel directly.</div>' +
+          '<a href="https://www.youtube.com/@AlMehdaviat" target="_blank" class="yt-btn">📺 Visit YouTube Channel</a>' +
+          '<div class="api-error">Error: ' + (e.message || 'API request failed') + '</div>' +
+          '<button class="refresh-btn" onclick="checkLive()">🔄 Try Again</button>';
       }
-    });
+    }
   </script>
 </body>
 </html>
