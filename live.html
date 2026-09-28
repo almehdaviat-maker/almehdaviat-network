@@ -4,15 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Stream - Al Mehdaviat Network</title>
-  <meta name="description" content="Watch live Islamic majalis, nohays, and supplications from Al Mehdaviat Network. Join live broadcasts from holy shrines.">
+  <meta name="description" content="Watch live Islamic majalis, nohays, and supplications from Al Mehdaviat Network.">
   <meta property="og:title" content="Live Stream - Al Mehdaviat Network">
-  <meta property="og:description" content="Watch live Islamic majalis, nohays, and supplications. Join live broadcasts from holy shrines.">
+  <meta property="og:description" content="Watch live Islamic majalis, nohays, and supplications.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://eloquent-starship-5e300b.netlify.app/live.html">
   <meta property="og:image" content="https://eloquent-starship-5e300b.netlify.app/assets/logo.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Live Stream - Al Mehdaviat Network">
-  <meta name="twitter:description" content="Watch live Islamic majalis, nohays, and supplications.">
   <link rel="canonical" href="https://eloquent-starship-5e300b.netlify.app/live.html">
   <link rel="stylesheet" href="css/style.css">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BGJDWPW468"></script>
@@ -24,24 +22,24 @@
   </script>
   <style>
     .live-page {
-      margin-top: 72px !important;
-      min-height: calc(100vh - 72px) !important;
-      display: block !important;
-      padding: 1rem !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      box-sizing: border-box !important;
+      margin-top: 72px;
+      min-height: calc(100vh - 72px);
+      display: block;
+      padding: 2rem 1rem;
+      width: 100%;
+      box-sizing: border-box;
       text-align: center;
     }
-    div#liveState.live-state {
+    .live-state {
+      display: block;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0;
+      box-sizing: border-box;
       text-align: center;
-      width: 100% !important;
-      max-width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      box-sizing: border-box !important;
     }
-    div#liveState .live-badge {
+    .live-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -55,7 +53,7 @@
       letter-spacing: 2px;
       margin-bottom: 1.5rem;
     }
-    div#liveState .live-badge::before {
+    .live-badge::before {
       content: '';
       width: 8px;
       height: 8px;
@@ -67,18 +65,19 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
     }
-    div#liveState .live-embed {
-      width: 100% !important;
-      max-width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      display: block !important;
+    .live-embed {
+      display: block;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0;
+      position: relative;
+      z-index: 1;
     }
-    div#liveState .live-embed iframe,
-    div#liveState.live-state iframe {
+    .live-embed iframe {
       display: block !important;
       width: 100% !important;
-      max-width: 1400px !important;
+      max-width: 1280px !important;
       height: auto !important;
       aspect-ratio: 16 / 9 !important;
       border: none !important;
@@ -86,16 +85,16 @@
       background: #000 !important;
       margin: 0 auto !important;
     }
-    div#liveState .live-title {
+    .live-title {
       font-weight: 700;
       color: #f5efe6;
       margin-top: 1rem;
       font-size: 1.1rem;
-      max-width: 1400px;
+      max-width: 1280px;
       margin-left: auto;
       margin-right: auto;
     }
-    .live-state .not-live-icon {
+    .not-live-icon {
       font-size: 4rem;
       margin-bottom: 1rem;
       opacity: 0.5;
@@ -103,7 +102,7 @@
       margin-left: auto;
       margin-right: auto;
     }
-    .live-state .not-live-title {
+    .not-live-title {
       font-family: 'Playfair Display', serif;
       font-size: 1.8rem;
       font-weight: 800;
@@ -113,7 +112,7 @@
       margin-left: auto;
       margin-right: auto;
     }
-    .live-state .not-live-sub {
+    .not-live-sub {
       color: #5a5a72;
       font-size: 1rem;
       margin-bottom: 2rem;
@@ -121,7 +120,7 @@
       margin-left: auto;
       margin-right: auto;
     }
-    .live-state .yt-btn {
+    .yt-btn {
       display: inline-flex;
       align-items: center;
       gap: 10px;
@@ -134,6 +133,10 @@
       font-size: 1rem;
       transition: all 0.3s;
       box-shadow: 0 4px 20px rgba(192, 57, 43, 0.3);
+    }
+    .yt-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(192, 57, 43, 0.5);
     }
     .refresh-btn {
       display: inline-flex;
@@ -164,7 +167,7 @@
       margin-right: auto;
     }
     @media (max-width: 768px) {
-      .live-page { padding: 0.5rem !important; }
+      .live-page { padding: 1rem 0.5rem; }
     }
   </style>
 </head>
@@ -209,9 +212,38 @@
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      checkLive();
-    });
+    function showNotLive() {
+      var state = document.getElementById('liveState');
+      state.innerHTML =
+        '<div class="not-live-icon">🔴</div>' +
+        '<div class="not-live-title">No Live Stream Right Now</div>' +
+        '<div class="not-live-sub">Visit our YouTube channel for previous live streams and recordings.</div>' +
+        '<a href="https://www.youtube.com/@AlMehdaviat/streams" target="_blank" class="yt-btn">📺 Visit YouTube for Live Streams</a>' +
+        '<br><button class="refresh-btn" onclick="checkLive()">🔄 Check Again</button>';
+    }
+
+    function showLive(live) {
+      var state = document.getElementById('liveState');
+      state.innerHTML =
+        '<div class="live-badge">LIVE NOW</div>' +
+        '<div class="live-embed"><iframe id="liveIframe" src="' + live.embedUrl + '?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>' +
+        '<div class="live-title">' + live.title + '</div>' +
+        '<button class="refresh-btn" onclick="checkLive()">🔄 Refresh Status</button>';
+
+      // Force iframe size via JS
+      var iframe = document.getElementById('liveIframe');
+      if (iframe) {
+        iframe.style.display = 'block';
+        iframe.style.width = '100%';
+        iframe.style.maxWidth = '1280px';
+        iframe.style.height = 'auto';
+        iframe.style.aspectRatio = '16 / 9';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '16px';
+        iframe.style.background = '#000';
+        iframe.style.margin = '0 auto';
+      }
+    }
 
     async function checkLive() {
       var state = document.getElementById('liveState');
@@ -221,32 +253,26 @@
         '<div class="loading-text">Checking live status...</div>' +
         '</div>';
 
+      // Force fresh check - clear cache
+      try { localStorage.removeItem('yt_cache_live'); } catch(e) {}
+
       try {
         var live = await YouTubeAPI.checkLiveNow();
         if (live) {
-          state.innerHTML =
-            '<div class="live-badge">LIVE NOW</div>' +
-            '<div class="live-embed"><iframe src="' + live.embedUrl + '?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>' +
-            '<div class="live-title">' + live.title + '</div>' +
-            '<button class="refresh-btn" onclick="checkLive()">🔄 Refresh Status</button>';
+          showLive(live);
         } else {
-          state.innerHTML =
-            '<div class="not-live-icon">🔴</div>' +
-            '<div class="not-live-title">No Live Stream Right Now</div>' +
-            '<div class="not-live-sub">Visit our YouTube channel for previous live streams and recordings.</div>' +
-            '<a href="https://www.youtube.com/@AlMehdaviat/streams" target="_blank" class="yt-btn">📺 Visit YouTube for Live Streams</a>' +
-            '<br><button class="refresh-btn" onclick="checkLive()">🔄 Check Again</button>';
+          showNotLive();
         }
       } catch(e) {
-        state.innerHTML =
-          '<div class="not-live-icon">🔴</div>' +
-          '<div class="not-live-title">Unable to Check Live Status</div>' +
-          '<div class="not-live-sub">Visit our YouTube channel directly.</div>' +
-          '<a href="https://www.youtube.com/@AlMehdaviat" target="_blank" class="yt-btn">📺 Visit YouTube Channel</a>' +
-          '<div class="api-error">Error: ' + (e.message || 'API request failed') + '</div>' +
-          '<button class="refresh-btn" onclick="checkLive()">🔄 Try Again</button>';
+        showNotLive();
       }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      checkLive();
+      // Auto-refresh every 60 seconds
+      setInterval(checkLive, 60000);
+    });
   </script>
 </body>
 </html>

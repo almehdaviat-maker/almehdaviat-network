@@ -129,7 +129,7 @@ const YouTubeAPI = {
 
   async checkLiveNow() {
     const key = `${this.CACHE_KEY}_live`;
-    const cached = this._getCache(key, 60 * 1000);
+    const cached = this._getCache(key, 30 * 1000);
     if (cached !== undefined && cached !== null) return cached;
 
     try {
@@ -139,11 +139,27 @@ const YouTubeAPI = {
         this._setCache(key, null);
         return null;
       }
+      // Verify the video is actually live (not ended)
+      const videoId = data.items[0].id.videoId;
+      try {
+        const vUrl = `${this.BASE_URL}/videos?key=${this.API_KEY}&id=${videoId}&part=snippet,liveStreamingDetails`;
+        const vData = await this._fetch(vUrl);
+        const video = vData.items && vData.items[0];
+        if (!video || !video.liveStreamingDetails || !video.liveStreamingDetails.actualStartTime) {
+          this._setCache(key, null);
+          return null;
+        }
+        // If actualEndTime exists, stream has ended
+        if (video.liveStreamingDetails.actualEndTime) {
+          this._setCache(key, null);
+          return null;
+        }
+      } catch(e) {}
       const result = {
-        id: data.items[0].id.videoId,
+        id: videoId,
         title: data.items[0].snippet.title,
         thumbnail: data.items[0].snippet.thumbnails?.high?.url,
-        embedUrl: `https://www.youtube.com/embed/${data.items[0].id.videoId}`
+        embedUrl: `https://www.youtube.com/embed/${videoId}`
       };
       this._setCache(key, result);
       return result;
