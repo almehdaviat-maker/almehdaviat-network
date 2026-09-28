@@ -34,16 +34,20 @@
       justify-content: center;
       padding: 2rem;
       width: 100%;
+      box-sizing: border-box;
     }
-    .live-state { text-align: center; max-width: 600px; }
-    .live-state.live-active { max-width: 1400px; }
+    .live-state { text-align: center; width: 100%; max-width: 600px; box-sizing: border-box; }
+    .live-state.live-active { max-width: 90vw; }
     .live-embed { width: 100%; max-width: 1400px; margin: 0 auto; }
     .live-embed iframe {
       width: 100%;
+      max-width: 1400px;
       aspect-ratio: 16/9;
       border: none;
       border-radius: 16px;
       background: #000;
+      display: block;
+      margin: 0 auto;
     }
     .live-badge {
       display: inline-flex;
