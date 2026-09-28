@@ -36,16 +36,38 @@
       width: 100%;
       box-sizing: border-box;
     }
-    .live-state { text-align: center; width: 100%; max-width: 600px; margin: 0 auto; box-sizing: border-box; }
-    .live-state.live-active { max-width: min(1400px, 95vw); }
-    .live-embed { width: 100%; margin: 0 auto; }
-    .live-embed iframe {
+    .live-state {
+      text-align: center;
       width: 100%;
+      max-width: min(1400px, 95vw);
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    .live-state > .live-embed,
+    .live-state > div > iframe {
+      width: 100% !important;
+      max-width: 1400px !important;
+    }
+    .live-state iframe {
+      width: 100% !important;
+      max-width: 1400px !important;
       aspect-ratio: 16/9;
       border: none;
       border-radius: 16px;
       background: #000;
       display: block;
+      margin: 0 auto;
+    }
+    .live-embed { width: 100%; margin: 0 auto; }
+    .not-live-icon,
+    .not-live-title,
+    .not-live-sub,
+    .yt-btn,
+    .api-error,
+    .refresh-btn {
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .live-badge {
       display: inline-flex;
@@ -180,20 +202,12 @@
       try {
         var live = await YouTubeAPI.checkLiveNow();
         if (live) {
-          state.classList.add('live-active');
-          state.style.maxWidth = 'min(1400px, 95vw)';
-          state.style.width = '100%';
           state.innerHTML =
             '<div class="live-badge">LIVE NOW</div>' +
-            '<div style="width:100%;margin:0 auto;position:relative;z-index:1;">' +
-            '<iframe style="width:100%;aspect-ratio:16/9;border:none;border-radius:16px;background:#000;display:block;" src="' + live.embedUrl + '?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' +
-            '</div>' +
+            '<div class="live-embed"><iframe src="' + live.embedUrl + '?autoplay=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>' +
             '<div class="live-title">' + live.title + '</div>' +
             '<button class="refresh-btn" onclick="checkLive()">🔄 Refresh Status</button>';
         } else {
-          state.classList.remove('live-active');
-          state.style.maxWidth = '';
-          state.style.width = '';
           state.innerHTML =
             '<div class="not-live-icon">🔴</div>' +
             '<div class="not-live-title">No Live Stream Right Now</div>' +
@@ -202,9 +216,6 @@
             '<br><button class="refresh-btn" onclick="checkLive()">🔄 Check Again</button>';
         }
       } catch(e) {
-        state.classList.remove('live-active');
-        state.style.maxWidth = '';
-        state.style.width = '';
         state.innerHTML =
           '<div class="not-live-icon">🔴</div>' +
           '<div class="not-live-title">Unable to Check Live Status</div>' +
